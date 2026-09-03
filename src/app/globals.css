@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --brand-primary: #7a1f1f;
+  --brand-primary-dark: #4a140d;
+  --brand-gold: #c5a04d;
+  --brand-accent: #e31837;
+  --brand-muted: #777777;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-dark: var(--brand-primary-dark);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-muted: var(--brand-muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.heading-display {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nav-link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-primary);
+}
+
+.nav-link:hover {
+  opacity: 0.8;
+}
+
+.price-gold {
+  color: var(--brand-gold);
+  font-weight: 700;
+}
+
+.section-underline {
+  display: inline-block;
+  border-bottom: 3px solid var(--brand-accent);
+  padding-bottom: 0.25rem;
+}
+
+@keyframes journey-flow {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.journey-line-active {
+  background: linear-gradient(
+    90deg,
+    #e31837 0%,
+    #e31837 35%,
+    #ffb3be 50%,
+    #e31837 65%,
+    #e31837 100%
+  );
+  background-size: 200% 100%;
+  animation: journey-flow 1.4s linear infinite;
+}
+
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
