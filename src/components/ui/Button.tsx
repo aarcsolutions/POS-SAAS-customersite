@@ -12,16 +12,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    'bg-brand-accent text-white hover:bg-[#c91530] shadow-sm disabled:opacity-50 uppercase tracking-wide font-bold',
+    'bg-brand-accent text-white hover:bg-brand-accent-hover shadow-sm disabled:opacity-50 uppercase tracking-wide font-bold',
   secondary:
-    'bg-brand-primary text-white hover:bg-[#6a1a1a] disabled:opacity-50 uppercase tracking-wide font-bold',
+    'bg-brand-primary text-white hover:bg-brand-primary-hover disabled:opacity-50 uppercase tracking-wide font-bold',
   dark:
-    'bg-brand-primary-dark text-white hover:bg-[#3a100a] disabled:opacity-50 uppercase tracking-wide font-bold',
-  ghost: 'bg-transparent text-brand-primary hover:bg-red-50',
+    'bg-brand-primary-dark text-white hover:bg-brand-primary-dark-hover disabled:opacity-50 uppercase tracking-wide font-bold',
+  ghost: 'bg-transparent text-brand-primary hover:bg-brand-primary-soft',
   outline:
     'border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50',
   gold:
-    'bg-brand-gold text-white hover:bg-[#b08f3f] disabled:opacity-50 uppercase tracking-wide font-bold',
+    'bg-brand-gold text-white hover:bg-brand-gold-hover disabled:opacity-50 uppercase tracking-wide font-bold',
 };
 
 const sizeClasses: Record<Size, string> = {

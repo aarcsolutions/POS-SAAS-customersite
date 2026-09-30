@@ -35,35 +35,35 @@ export function ProductCard({ product }: ProductCardProps) {
           src={imageUrl}
           alt={product.name}
           fill
-          className="object-contain p-2 sm:p-3"
-          sizes="(max-width: 640px) 50vw, 240px"
+          className="object-contain p-1.5 sm:p-3"
+          sizes="(max-width: 640px) 45vw, 240px"
         />
       </Link>
 
-      <div className="flex flex-1 flex-col px-3 pb-3 pt-1.5 sm:px-3.5 sm:pb-3.5">
+      <div className="flex flex-1 flex-col px-2 pb-2.5 pt-1 sm:px-3.5 sm:pb-3.5 sm:pt-1.5">
         <Link href={`/product/${product.id}`}>
-          <h3 className="text-xs font-bold uppercase leading-snug tracking-wide text-neutral-900 sm:text-sm">
+          <h3 className="line-clamp-2 text-[11px] font-bold uppercase leading-snug tracking-wide text-neutral-900 sm:text-sm">
             {product.name}
           </h3>
         </Link>
 
         {product.description ? (
-          <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-brand-muted sm:text-xs">
+          <p className="mt-0.5 line-clamp-2 text-[10px] leading-relaxed text-brand-muted sm:mt-1 sm:text-xs">
             {product.description}
           </p>
         ) : null}
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <span className="text-xs font-bold text-neutral-900 sm:text-sm">
+        <div className="mt-auto flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-3">
+          <span className="text-[11px] font-bold text-neutral-900 sm:text-sm">
             {formatRs(minPrice)}
           </span>
           <button
             type="button"
             onClick={handleAddToCart}
-            className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-brand-accent px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-white transition hover:bg-[#c91530] sm:px-3 sm:py-2 sm:text-[10px]"
+            className="inline-flex w-full shrink-0 items-center justify-center gap-0.5 rounded-full bg-brand-accent px-2 py-1.5 text-[9px] font-bold uppercase tracking-wide text-white transition hover:bg-brand-accent-hover sm:w-auto sm:px-3 sm:py-2 sm:text-[10px]"
           >
             <Plus className="h-3 w-3" strokeWidth={3} />
-            Add to Cart
+            Add
           </button>
         </div>
       </div>

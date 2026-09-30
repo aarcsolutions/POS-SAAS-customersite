@@ -6,11 +6,23 @@ interface AuthLayoutProps {
   subtitle: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Wider card for multi-column forms */
+  wide?: boolean;
 }
 
-export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProps) {
+export function AuthLayout({
+  title,
+  subtitle,
+  children,
+  footer,
+  wide = false,
+}: AuthLayoutProps) {
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-8rem)] max-w-md flex-col justify-center px-4 py-10">
+    <div
+      className={`mx-auto flex min-h-[calc(100vh-8rem)] flex-col justify-center px-4 py-10 ${
+        wide ? 'max-w-2xl' : 'max-w-md'
+      }`}
+    >
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="mb-6 text-center">
           <h1 className="heading-display text-2xl text-brand-primary">{title}</h1>

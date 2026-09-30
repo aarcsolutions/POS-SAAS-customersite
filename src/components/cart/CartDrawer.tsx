@@ -30,10 +30,10 @@ export function CartDrawer() {
       <button
         type="button"
         aria-label="Close cart"
-        className="fixed inset-0 z-50 bg-black/40"
+        className="fixed inset-x-0 top-14 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-40 bg-black/40 xl:inset-0"
         onClick={closeCart}
       />
-      <aside className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[400px] flex-col bg-white shadow-2xl">
+      <aside className="fixed right-0 top-14 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-50 flex w-full max-w-[400px] flex-col bg-white shadow-2xl xl:top-0 xl:bottom-0 xl:h-full">
         <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
           <h2 className="heading-display text-base text-neutral-900">
             Your Cart ({itemCount})

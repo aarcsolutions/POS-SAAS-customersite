@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -9,14 +9,21 @@ import {
   MapPin,
   PackageSearch,
   Phone,
+  Star,
   Truck,
   XCircle,
 } from 'lucide-react';
+import OrderReviewModal from '@/components/orders/OrderReviewModal';
 import { OrderJourneyStepper } from '@/components/orders/OrderJourneyStepper';
 import { Button } from '@/components/ui/Button';
+import { useTenant } from '@/components/providers/TenantProvider';
+import { useOrderTrackSocket } from '@/hooks/use-order-track-socket';
 import { storefrontApi } from '@/services/storefront';
+import { useAuthStore } from '@/stores/auth-store';
 import type { OrderTrackResult } from '@/types/storefront';
 import { cn } from '@/utils/format';
+
+const TERMINAL_STATUSES = new Set(['completed', 'cancelled']);
 
 const STATUS_HEADLINE: Record<string, string> = {
   pending: 'Order placed — waiting for confirmation',
@@ -28,51 +35,170 @@ const STATUS_HEADLINE: Record<string, string> = {
   cancelled: 'This order was cancelled',
 };
 
+function reviewSkipKey(orderNumber: string) {
+  return `review-skip:${orderNumber}`;
+}
+
 export default function TrackOrderContent() {
   const searchParams = useSearchParams();
   const initialNumber = searchParams.get('number') ?? '';
+  const { tenant } = useTenant();
+  const reviewsEnabled = !!tenant?.features?.reviews;
+  const hydrateAuth = useAuthStore((s) => s.hydrate);
+  const customer = useAuthStore((s) => s.customer);
 
   const [orderNumber, setOrderNumber] = useState(initialNumber);
   const [order, setOrder] = useState<OrderTrackResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+  const [trackedNumber, setTrackedNumber] = useState<string | null>(null);
+  const [promptReview, setPromptReview] = useState(false);
+  const [manualReview, setManualReview] = useState(false);
+  const [savingReview, setSavingReview] = useState(false);
+  const inFlightRef = useRef(false);
+  const prevStatusRef = useRef<string | null>(null);
 
-  const fetchOrder = async (number: string) => {
+  useEffect(() => {
+    hydrateAuth();
+  }, [hydrateAuth]);
+
+  const canReviewOrder = Boolean(
+    reviewsEnabled &&
+      order &&
+      order.status === 'completed' &&
+      !order.hasReview &&
+      order.id &&
+      customer?.customerId &&
+      (!order.customerId || order.customerId === customer.customerId),
+  );
+
+  const fetchOrder = useCallback(async (number: string, silent = false) => {
     const trimmed = number.trim();
     if (!trimmed) {
       setError('Please enter your order number');
       return;
     }
 
-    setLoading(true);
-    setError(null);
-    setSearched(true);
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+      setSearched(true);
+    }
 
     try {
       const result = await storefrontApi.trackOrder(trimmed);
       setOrder(result);
+      setTrackedNumber(trimmed);
+      setError(null);
     } catch (err: unknown) {
-      setOrder(null);
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? 'Order not found. Please check the number and try again.';
-      setError(message);
+      if (!silent) {
+        setOrder(null);
+        setTrackedNumber(null);
+        const message =
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message ??
+          'Order not found. Please check the number and try again.';
+        setError(message);
+      }
     } finally {
-      setLoading(false);
+      inFlightRef.current = false;
+      if (!silent) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (initialNumber.trim()) {
+      setOrderNumber(initialNumber);
       void fetchOrder(initialNumber);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialNumber, fetchOrder]);
+
+  useOrderTrackSocket({
+    enabled: Boolean(
+      trackedNumber && order && !TERMINAL_STATUSES.has(order.status),
+    ),
+    join: trackedNumber
+      ? { mode: 'number', orderNumber: trackedNumber }
+      : null,
+    onUpdate: (partial) => {
+      setOrder((prev) => (prev ? { ...prev, ...partial } : prev));
+    },
+    onReconnectRefresh: () => {
+      if (trackedNumber) void fetchOrder(trackedNumber, true);
+    },
+  });
+
+  useEffect(() => {
+    if (!order) {
+      prevStatusRef.current = null;
+      setPromptReview(false);
+      return;
+    }
+
+    const prev = prevStatusRef.current;
+    prevStatusRef.current = order.status;
+
+    if (!canReviewOrder) {
+      setPromptReview(false);
+      return;
+    }
+
+    const skipped =
+      typeof window !== 'undefined' &&
+      sessionStorage.getItem(reviewSkipKey(order.orderNumber)) === '1';
+
+    if (skipped) {
+      setPromptReview(false);
+      return;
+    }
+
+    if (prev === null || prev !== 'completed') {
+      setPromptReview(true);
+    }
+  }, [order, canReviewOrder]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     void fetchOrder(orderNumber);
+  };
+
+  const closeReviewPrompt = (skip = false) => {
+    if (skip && order?.orderNumber) {
+      sessionStorage.setItem(reviewSkipKey(order.orderNumber), '1');
+    }
+    setPromptReview(false);
+    setManualReview(false);
+  };
+
+  const handleSubmitReview = async (data: {
+    rating: number;
+    comment: string;
+  }) => {
+    if (!customer?.customerId || !order?.id) return;
+    setSavingReview(true);
+    try {
+      await storefrontApi.createReview({
+        customerId: customer.customerId,
+        orderId: order.id,
+        rating: data.rating,
+        comment: data.comment,
+      });
+      setOrder((prev) => (prev ? { ...prev, hasReview: true } : prev));
+      closeReviewPrompt(false);
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? 'Could not submit review. Please try again.';
+      setError(message);
+    } finally {
+      setSavingReview(false);
+    }
   };
 
   return (
@@ -159,7 +285,7 @@ export default function TrackOrderContent() {
                     ? 'bg-rose-50 text-rose-600'
                     : order.status === 'completed'
                       ? 'bg-emerald-50 text-emerald-700'
-                      : 'bg-red-50 text-brand-accent',
+                      : 'bg-brand-accent-soft text-brand-accent',
                 )}
               >
                 {order.status.replace(/_/g, ' ')}
@@ -217,7 +343,7 @@ export default function TrackOrderContent() {
             ) : null}
 
             {order.driver && order.status === 'out_for_delivery' ? (
-              <div className="flex gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-neutral-800">
+              <div className="flex gap-3 rounded-xl bg-brand-accent-soft px-4 py-3 text-sm text-neutral-800">
                 <Truck className="mt-0.5 h-5 w-5 shrink-0 text-brand-accent" />
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-brand-muted">
@@ -228,6 +354,17 @@ export default function TrackOrderContent() {
                 </div>
               </div>
             ) : null}
+
+            {canReviewOrder ? (
+              <button
+                type="button"
+                onClick={() => setManualReview(true)}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-brand-accent bg-white text-xs font-bold uppercase tracking-wide text-brand-accent transition hover:bg-brand-accent/5 sm:w-auto sm:px-6"
+              >
+                <Star className="h-4 w-4" />
+                Leave a Review
+              </button>
+            ) : null}
           </div>
         ) : searched && !loading && !error ? (
           <p className="mt-6 text-center text-sm text-brand-muted">
@@ -235,6 +372,19 @@ export default function TrackOrderContent() {
           </p>
         ) : null}
       </div>
+
+      {(promptReview || manualReview) && canReviewOrder && order ? (
+        <OrderReviewModal
+          open
+          orderLabel={`Order ${order.orderNumber}`}
+          customerName={customer?.name}
+          saving={savingReview}
+          showSkip={promptReview && !manualReview}
+          onClose={() => closeReviewPrompt(true)}
+          onSkip={() => closeReviewPrompt(true)}
+          onSubmit={handleSubmitReview}
+        />
+      ) : null}
     </div>
   );
 }

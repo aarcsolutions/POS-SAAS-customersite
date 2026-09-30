@@ -6,4 +6,5 @@ export const mockTenant: TenantInfo = {
   slug: 'burger',
   logoUrl: null,
   tagline: 'Fresh burgers, fast delivery',
+  features: { catering: true, reservations: true, reviews: true },
 };

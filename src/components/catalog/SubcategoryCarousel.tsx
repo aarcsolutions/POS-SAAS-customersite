@@ -34,7 +34,7 @@ export function SubcategoryCarousel({
           <button
             type="button"
             onClick={() => scroll('left')}
-            className="absolute -left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md sm:-left-4"
+            className="absolute left-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md"
             aria-label="Scroll left"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -42,7 +42,7 @@ export function SubcategoryCarousel({
           <button
             type="button"
             onClick={() => scroll('right')}
-            className="absolute -right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md sm:-right-4"
+            className="absolute right-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md"
             aria-label="Scroll right"
           >
             <ChevronRight className="h-4 w-4" />
@@ -51,7 +51,7 @@ export function SubcategoryCarousel({
       ) : null}
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto scroll-smooth px-1 pb-2 sm:gap-5"
+        className="flex gap-4 overflow-x-auto scroll-smooth px-10 pb-2 sm:gap-5"
       >
         {categories.map((category) => (
           <button

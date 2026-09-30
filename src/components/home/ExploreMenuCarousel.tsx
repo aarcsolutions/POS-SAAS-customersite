@@ -44,14 +44,14 @@ export function ExploreMenuCarousel() {
           <button
             type="button"
             onClick={() => scroll('left')}
-            className="absolute -left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md sm:-left-4"
+            className="absolute left-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md"
             aria-label="Scroll left"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <div
             ref={scrollRef}
-            className="flex gap-6 overflow-x-auto scroll-smooth px-6 pb-4"
+            className="flex gap-6 overflow-x-auto scroll-smooth px-10 pb-4"
           >
             {categories.map((cat) => (
               <Link
@@ -66,7 +66,7 @@ export function ExploreMenuCarousel() {
           <button
             type="button"
             onClick={() => scroll('right')}
-            className="absolute -right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md sm:-right-4"
+            className="absolute right-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md"
             aria-label="Scroll right"
           >
             <ChevronRight className="h-4 w-4" />

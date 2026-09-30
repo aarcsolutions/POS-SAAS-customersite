@@ -6,12 +6,16 @@ import { Banknote } from 'lucide-react';
 import { toast } from 'sonner';
 import { CartLineItems } from '@/components/cart/CartLineItems';
 import { Button } from '@/components/ui/Button';
+import { CitySelect } from '@/components/ui/CitySelect';
 import { storefrontApi } from '@/services/storefront';
 import { useBranchStore } from '@/stores/branch-store';
 import { useCartStore } from '@/stores/cart-store';
 import type { OrderType } from '@/types/storefront';
 import { useOrderPrefsStore } from '@/stores/order-prefs-store';
 import { calcOrderTotals, formatRs } from '@/utils/format';
+import { saveOrderReceipt } from '@/utils/order-receipt';
+import { useGuestOrdersStore } from '@/stores/guest-orders-store';
+import { useAuthStore } from '@/stores/auth-store';
 
 interface FormErrors {
   customerName?: string;
@@ -26,6 +30,10 @@ export function CheckoutForm() {
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.getSubtotal());
   const clearCart = useCartStore((s) => s.clearCart);
+  const addGuestOrder = useGuestOrdersStore((s) => s.addOrder);
+  const hydrateAuth = useAuthStore((s) => s.hydrate);
+  const customer = useAuthStore((s) => s.customer);
+  const isLoggedIn = !!customer;
 
   const defaultOrderType = useOrderPrefsStore((s) => s.orderType);
   const [orderType, setOrderType] = useState<OrderType>(defaultOrderType);
@@ -33,6 +41,7 @@ export function CheckoutForm() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
+  const [prefilled, setPrefilled] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<{
     code: string;
@@ -48,6 +57,19 @@ export function CheckoutForm() {
     orderType === 'delivery',
     appliedPromo?.discount ?? 0,
   );
+
+  useEffect(() => {
+    hydrateAuth();
+  }, [hydrateAuth]);
+
+  useEffect(() => {
+    if (prefilled || !customer) return;
+    setCustomerName(customer.name || '');
+    setPhone(customer.phone || '');
+    setAddress(customer.address || '');
+    setCity(customer.city || '');
+    setPrefilled(true);
+  }, [customer, prefilled]);
 
   useEffect(() => {
     if (appliedPromo) {
@@ -129,10 +151,60 @@ export function CheckoutForm() {
         promoCode: appliedPromo?.code || promoCode.trim() || undefined,
         items,
       });
-      clearCart();
-      router.push(
-        `/order/${order.id}?number=${order.orderNumber}&token=${order.trackingToken}`,
+
+      const orderId = order.id;
+      const orderNumber =
+        order.orderNumber ||
+        (order as { order_number?: string }).order_number ||
+        '';
+
+      if (!orderId || !orderNumber) {
+        toast.error('Order placed but confirmation details are missing.');
+        return;
+      }
+
+      // Snapshot cart BEFORE clear — used by receipt page
+      saveOrderReceipt({
+        orderId,
+        orderNumber,
+        orderType,
+        customerName: customerName.trim(),
+        phone: phone.trim(),
+        items: items.map((item) => ({ ...item })),
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        deliveryFee: totals.deliveryFee,
+        gst: totals.gst,
+        total: totals.total,
+        promoCode: appliedPromo?.code ?? null,
+        placedAt: new Date().toISOString(),
+      });
+
+      // Guest (no account): keep order in memory until page refresh
+      if (!isLoggedIn) {
+        addGuestOrder({
+          id: orderId,
+          orderNumber,
+          orderType,
+          status: 'pending',
+          customerName: customerName.trim(),
+          phone: phone.trim(),
+          items: items.map((item) => ({ ...item })),
+          subtotal: totals.subtotal,
+          discount: totals.discount,
+          deliveryFee: totals.deliveryFee,
+          gst: totals.gst,
+          total: totals.total,
+          promoCode: appliedPromo?.code ?? null,
+          placedAt: new Date().toISOString(),
+        });
+      }
+
+      // Go to receipt first, then clear cart (avoids checkout empty-cart redirect race)
+      router.replace(
+        `/order/${orderId}?number=${encodeURIComponent(orderNumber)}`,
       );
+      clearCart();
     } catch {
       toast.error('Could not place order. Please try again.');
     } finally {
@@ -213,11 +285,10 @@ export function CheckoutForm() {
                     <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-brand-muted">
                       City
                     </label>
-                    <input
+                    <CitySelect
                       value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="w-full rounded-lg border border-neutral-200 px-4 py-2.5 text-sm outline-none focus:border-brand-accent"
-                      placeholder="City"
+                      onChange={setCity}
+                      placeholder="Select city"
                     />
                     {errors.city ? (
                       <p className="mt-1 text-xs text-brand-accent">{errors.city}</p>
@@ -251,7 +322,7 @@ export function CheckoutForm() {
             <h2 className="heading-display mb-4 text-sm text-neutral-900">
               Payment Method
             </h2>
-            <div className="flex items-center gap-3 rounded-xl border-2 border-brand-accent bg-red-50 p-4">
+            <div className="flex items-center gap-3 rounded-xl border-2 border-brand-accent bg-brand-accent-soft p-4">
               <div className="flex h-5 w-5 items-center justify-center rounded-full border-4 border-brand-accent bg-white">
                 <div className="h-2 w-2 rounded-full bg-brand-accent" />
               </div>

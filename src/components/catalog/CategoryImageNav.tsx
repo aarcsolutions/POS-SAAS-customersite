@@ -84,7 +84,7 @@ export function CategoryImageNav({
                 onClick={() => scroll('left')}
                 tabIndex={collapsed ? -1 : 0}
                 className={cn(
-                  'absolute -left-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md transition-all duration-300 hover:opacity-90 sm:-left-3',
+                  'absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md transition-all duration-300 hover:opacity-90',
                   collapsed && 'scale-75 opacity-0',
                 )}
                 aria-label="Scroll categories left"
@@ -94,7 +94,7 @@ export function CategoryImageNav({
 
               <div
                 ref={scrollRef}
-                className="flex gap-5 overflow-x-auto scroll-smooth px-8 pb-2 sm:gap-6 sm:px-10"
+                className="flex gap-5 overflow-x-auto scroll-smooth px-11 pb-2 sm:gap-6 sm:px-12"
               >
                 {categories.map((category) => (
                   <div
@@ -115,7 +115,7 @@ export function CategoryImageNav({
                 onClick={() => scroll('right')}
                 tabIndex={collapsed ? -1 : 0}
                 className={cn(
-                  'absolute -right-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md transition-all duration-300 hover:opacity-90 sm:-right-3',
+                  'absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-brand-accent text-white shadow-md transition-all duration-300 hover:opacity-90',
                   collapsed && 'scale-75 opacity-0',
                 )}
                 aria-label="Scroll categories right"

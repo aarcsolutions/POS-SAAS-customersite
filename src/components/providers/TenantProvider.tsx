@@ -14,6 +14,32 @@ const TenantContext = createContext<TenantContextValue>({
   loading: true,
 });
 
+function applyBrandingTheme(tenant: TenantInfo) {
+  const root = document.documentElement;
+  if (tenant.primaryColor) {
+    root.style.setProperty('--brand-primary', tenant.primaryColor);
+  }
+  if (tenant.primaryDark) {
+    root.style.setProperty('--brand-primary-dark', tenant.primaryDark);
+  }
+  if (tenant.accentColor) {
+    root.style.setProperty('--brand-accent', tenant.accentColor);
+  }
+  if (tenant.goldColor) {
+    root.style.setProperty('--brand-gold', tenant.goldColor);
+  }
+
+  if (tenant.faviconUrl) {
+    let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = tenant.faviconUrl;
+  }
+}
+
 export function TenantProvider({ children }: { children: ReactNode }) {
   const [tenant, setTenant] = useState<TenantInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +52,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setTenant(data);
           setLoading(false);
+          applyBrandingTheme(data);
           if (data.name) {
             document.title = `${data.name} | Order Online`;
           }
@@ -39,6 +66,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
             slug: 'store',
             logoUrl: null,
             tagline: 'Order online',
+            features: { catering: false, reservations: false, reviews: false },
           });
           setLoading(false);
         }

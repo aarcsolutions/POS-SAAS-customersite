@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { CheckoutForm } from '@/components/checkout/CheckoutForm';
-import { useBranchBootstrap } from '@/hooks/use-branch-bootstrap';
 import { useBranchStore } from '@/stores/branch-store';
 import { useCartStore } from '@/stores/cart-store';
 import { useEffect } from 'react';
@@ -15,17 +14,18 @@ export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
   const setBranchId = useCartStore((s) => s.setBranchId);
 
-  useBranchBootstrap();
-
   useEffect(() => {
     setBranchId(selectedBranchId);
   }, [selectedBranchId, setBranchId]);
 
+  // Only kick empty-cart visitors away on first load — NOT after Place Order
+  // (clearCart would otherwise race and send users to /menu instead of receipt)
   useEffect(() => {
     if (items.length === 0) {
       router.replace('/menu');
     }
-  }, [items.length, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
+  }, []);
 
   return (
     <div>

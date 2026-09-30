@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { useTenant } from '@/components/providers/TenantProvider';
 import { StoreSelect } from '@/components/ui/StoreSelect';
 import { MAIN_BRANCH_LABEL } from '@/constants/branch';
-import { useBranchBootstrap } from '@/hooks/use-branch-bootstrap';
 import { useBranchStore } from '@/stores/branch-store';
 import { useCartStore } from '@/stores/cart-store';
 import { useOrderPrefsStore } from '@/stores/order-prefs-store';
@@ -30,8 +29,6 @@ function buildDirectionsUrl(branch: Branch | null): string {
 export function OrderTypeModal() {
   const pathname = usePathname();
   const { tenant } = useTenant();
-
-  useBranchBootstrap();
 
   const hydrated = useBranchStore((s) => s.hydrated);
   const branches = useBranchStore((s) => s.branches);
@@ -148,7 +145,7 @@ export function OrderTypeModal() {
         aria-modal="true"
         aria-labelledby="order-type-modal-title"
       >
-        <div className="overflow-hidden rounded-t-3xl bg-[#b85c5c] px-6 py-8 text-center">
+        <div className="overflow-hidden rounded-t-3xl bg-brand-primary px-6 py-8 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-white shadow-md">
             {tenant?.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -207,7 +204,7 @@ export function OrderTypeModal() {
             type="button"
             onClick={handleUseCurrentLocation}
             disabled={locating}
-            className="mx-auto mt-3 flex items-center gap-2 rounded-full border border-[#e8a4a4] px-4 py-2 text-sm font-semibold text-[#d47373] transition hover:bg-red-50 disabled:opacity-60"
+            className="mx-auto mt-3 flex items-center gap-2 rounded-full border border-brand-accent-ring px-4 py-2 text-sm font-semibold text-brand-accent transition hover:bg-brand-accent-soft disabled:opacity-60"
           >
             {locating ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -237,7 +234,7 @@ export function OrderTypeModal() {
           </div>
 
           {orderType === 'takeaway' && selectedBranch ? (
-            <div className="mt-4 rounded-2xl bg-[#fff0f0] p-4">
+            <div className="mt-4 rounded-2xl bg-brand-accent-soft p-4">
               <div className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" />
                 <div className="min-w-0">
@@ -270,7 +267,7 @@ export function OrderTypeModal() {
           <button
             type="button"
             onClick={handleSelect}
-            className="mt-5 w-full rounded-2xl bg-brand-accent py-3.5 text-base font-bold text-white shadow-md shadow-red-200/60 transition hover:bg-[#c91530]"
+            className="mt-5 w-full rounded-2xl bg-brand-accent py-3.5 text-base font-bold text-white shadow-md transition hover:bg-brand-accent-hover"
           >
             Select
           </button>

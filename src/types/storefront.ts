@@ -4,6 +4,21 @@ export interface TenantInfo {
   slug: string;
   logoUrl: string | null;
   tagline: string;
+  primaryColor?: string;
+  primaryDark?: string;
+  accentColor?: string;
+  goldColor?: string;
+  heroImageUrl?: string | null;
+  heroVideoUrl?: string | null;
+  faviconUrl?: string | null;
+  heroEyebrow?: string | null;
+  heroTitle?: string | null;
+  heroCtaLabel?: string | null;
+  features?: {
+    catering: boolean;
+    reservations: boolean;
+    reviews?: boolean;
+  };
 }
 
 export interface Branch {
@@ -75,6 +90,7 @@ export interface CheckoutPayload {
 export interface OrderResponse {
   id: string;
   orderNumber: string;
+  customerId?: string | null;
   trackingToken: string;
   estimatedMinutes: number;
   message: string;
@@ -103,6 +119,7 @@ export interface OrderTrackDriver {
 }
 
 export interface OrderTrackResult {
+  id?: string;
   orderNumber: string;
   status: OrderTrackStatus;
   orderType: string;
@@ -113,4 +130,58 @@ export interface OrderTrackResult {
   paymentStatus?: string;
   driver?: OrderTrackDriver | null;
   createdAt?: string;
+  hasReview?: boolean;
+  customerId?: string | null;
+}
+
+export interface MyOrderSummary {
+  id: string;
+  orderNumber: string;
+  orderType: string;
+  status: OrderTrackStatus | string;
+  finalTotal: number;
+  subtotal?: number;
+  discount?: number;
+  taxAmount?: number;
+  deliveryFee?: number;
+  paymentStatus?: string;
+  paymentMethod?: string | null;
+  createdAt?: string;
+  deliveryAddress?: string | null;
+  deliveryCity?: string | null;
+  items?: CartItem[];
+  source?: 'account' | 'guest';
+  hasReview?: boolean;
+}
+
+export interface CustomerAuthResponse {
+  token: string;
+  customerId: string;
+  name: string;
+  phone: string;
+  email?: string | null;
+  address?: string | null;
+  city?: string | null;
+}
+
+export interface CustomerSignupPayload {
+  name: string;
+  phone: string;
+  email?: string;
+  password: string;
+  address?: string;
+  city?: string;
+}
+
+export interface CustomerLoginPayload {
+  identifier: string;
+  password: string;
+}
+
+export interface CustomerUpdateProfilePayload {
+  customerId: string;
+  name: string;
+  email?: string | null;
+  address?: string | null;
+  city?: string | null;
 }

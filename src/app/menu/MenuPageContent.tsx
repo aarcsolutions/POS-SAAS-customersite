@@ -6,7 +6,6 @@ import { CategoryBreadcrumb } from '@/components/catalog/CategoryBreadcrumb';
 import { CategoryProductSection } from '@/components/catalog/CategoryProductSection';
 import { SubcategoryCarousel } from '@/components/catalog/SubcategoryCarousel';
 import { MenuPageSkeleton } from '@/components/ui/LoadingSkeleton';
-import { useBranchBootstrap } from '@/hooks/use-branch-bootstrap';
 import { useCatalog } from '@/hooks/use-catalog';
 import type { Category } from '@/types/storefront';
 import {
@@ -24,8 +23,6 @@ export default function MenuPageContent() {
   const categoryParam = searchParams.get('category');
   const { catalog, loading, hydrated } = useCatalog();
   const [activeCarouselId, setActiveCarouselId] = useState<string | null>(null);
-
-  useBranchBootstrap();
 
   useEffect(() => {
     if (!categoryParam) {

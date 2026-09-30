@@ -34,7 +34,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-white">
         <TenantProvider>
           <StoreHeader />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] xl:pb-0">
+            {children}
+          </main>
           <OrderTypeModal />
         </TenantProvider>
         <Toaster position="top-right" richColors />

@@ -8,7 +8,6 @@ import { ProductDetailSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { productMatchesBranch } from '@/constants/branch';
-import { useBranchBootstrap } from '@/hooks/use-branch-bootstrap';
 import { storefrontApi } from '@/services/storefront';
 import { useBranchStore } from '@/stores/branch-store';
 import { useCartStore } from '@/stores/cart-store';
@@ -33,8 +32,6 @@ export default function ProductDetailPage() {
     null,
   );
   const [quantity, setQuantity] = useState(1);
-
-  useBranchBootstrap();
 
   useEffect(() => {
     setBranchId(selectedBranchId);
@@ -91,7 +88,10 @@ export default function ProductDetailPage() {
     );
 
     toast.success(`${product.name} added to cart`);
-    openCart();
+    // Auto-open cart drawer on desktop only; mobile just updates badge count
+    if (window.matchMedia('(min-width: 1280px)').matches) {
+      openCart();
+    }
   };
 
   if (loading) {
@@ -136,7 +136,7 @@ export default function ProductDetailPage() {
                 className={cn(
                   'rounded-full border px-4 py-2.5 text-sm font-medium transition',
                   selectedVariantId === variant.id
-                    ? 'border-brand-accent bg-red-50 text-brand-accent ring-2 ring-red-100'
+                    ? 'border-brand-accent bg-brand-accent-soft text-brand-accent ring-2 ring-brand-accent-ring'
                     : 'border-neutral-200 bg-white text-neutral-700 hover:border-brand-accent',
                 )}
               >

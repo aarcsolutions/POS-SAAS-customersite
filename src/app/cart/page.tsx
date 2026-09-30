@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { CartLineItems } from '@/components/cart/CartLineItems';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { useBranchBootstrap } from '@/hooks/use-branch-bootstrap';
 import { useBranchStore } from '@/stores/branch-store';
 import { useCartStore } from '@/stores/cart-store';
 import { formatRs } from '@/utils/format';
@@ -16,8 +15,6 @@ export default function CartPage() {
   const setBranchId = useCartStore((s) => s.setBranchId);
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.getSubtotal());
-
-  useBranchBootstrap();
 
   useEffect(() => {
     setBranchId(selectedBranchId);

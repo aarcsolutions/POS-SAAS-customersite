@@ -19,7 +19,7 @@ export function MenuPageSkeleton() {
           <LoadingSkeleton key={i} className="h-10 w-full" />
         ))}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <LoadingSkeleton key={i} className="h-56 w-full" />
         ))}

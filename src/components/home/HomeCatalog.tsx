@@ -8,7 +8,6 @@ import {
 } from '@/components/catalog/CategoryImageNav';
 import { CategoryProductSection } from '@/components/catalog/CategoryProductSection';
 import { MenuPageSkeleton } from '@/components/ui/LoadingSkeleton';
-import { useBranchBootstrap } from '@/hooks/use-branch-bootstrap';
 import { useCatalog } from '@/hooks/use-catalog';
 import type { Category } from '@/types/storefront';
 import {
@@ -26,8 +25,6 @@ export function HomeCatalog() {
   const { collapsed: navCollapsed, menuRef } = useCategoryNavCollapse(
     hydrated && !loading && !!catalog,
   );
-
-  useBranchBootstrap();
 
   const rootCategories = useMemo(
     () => (catalog ? getRootCategories(catalog.categories) : []),

@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, MapPin } from 'lucide-react';
-import { toast } from 'sonner';
 import { MAIN_BRANCH_LABEL } from '@/constants/branch';
 import { useBranchStore } from '@/stores/branch-store';
 import { useCartStore } from '@/stores/cart-store';
 import { cn } from '@/utils/format';
+import { notifySuccess } from '@/utils/notify';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface BranchDropdownProps {
   tenantName?: string;
@@ -14,14 +15,23 @@ interface BranchDropdownProps {
 
 export function BranchDropdown({ tenantName = 'Store' }: BranchDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [pendingBranchId, setPendingBranchId] = useState<string | null | undefined>(
+    undefined
+  );
   const ref = useRef<HTMLDivElement>(null);
 
   const branches = useBranchStore((s) => s.branches);
   const selectedBranchId = useBranchStore((s) => s.selectedBranchId);
   const selectBranch = useBranchStore((s) => s.selectBranch);
-  const selectedBranch = useBranchStore((s) => s.getSelectedBranch());
+  const selectedBranch = useBranchStore((s) =>
+    s.selectedBranchId === null
+      ? null
+      : (s.branches.find((b) => b.id === s.selectedBranchId) ?? null),
+  );
   const setBranchId = useCartStore((s) => s.setBranchId);
-  const itemCount = useCartStore((s) => s.getItemCount());
+  const itemCount = useCartStore((s) =>
+    s.items.reduce((sum, item) => sum + item.quantity, 0),
+  );
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -33,6 +43,16 @@ export function BranchDropdown({ tenantName = 'Store' }: BranchDropdownProps) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  const applyBranch = (branchId: string | null) => {
+    selectBranch(branchId);
+    setBranchId(branchId);
+    setOpen(false);
+    notifySuccess(
+      'Branch Updated',
+      branchId === null ? 'Main location selected' : 'Branch updated',
+    );
+  };
+
   const handleSelect = (branchId: string | null) => {
     if (branchId === selectedBranchId) {
       setOpen(false);
@@ -40,18 +60,11 @@ export function BranchDropdown({ tenantName = 'Store' }: BranchDropdownProps) {
     }
 
     if (itemCount > 0) {
-      const confirmed = window.confirm(
-        'Switching branch will load a different cart. Your current branch cart is saved separately. Continue?',
-      );
-      if (!confirmed) return;
+      setPendingBranchId(branchId);
+      return;
     }
 
-    selectBranch(branchId);
-    setBranchId(branchId);
-    setOpen(false);
-    toast.success(
-      branchId === null ? 'Main location selected' : 'Branch updated',
-    );
+    applyBranch(branchId);
   };
 
   const label = selectedBranch
@@ -86,8 +99,8 @@ export function BranchDropdown({ tenantName = 'Store' }: BranchDropdownProps) {
                 type="button"
                 onClick={() => handleSelect(null)}
                 className={cn(
-                  'w-full px-4 py-3 text-left transition hover:bg-red-50',
-                  selectedBranchId === null && 'bg-red-50',
+                  'w-full px-4 py-3 text-left transition hover:bg-brand-accent-soft',
+                  selectedBranchId === null && 'bg-brand-accent-soft',
                 )}
               >
                 <p className="text-sm font-bold text-brand-primary">
@@ -104,8 +117,8 @@ export function BranchDropdown({ tenantName = 'Store' }: BranchDropdownProps) {
                   type="button"
                   onClick={() => handleSelect(branch.id)}
                   className={cn(
-                    'w-full px-4 py-3 text-left transition hover:bg-red-50',
-                    selectedBranchId === branch.id && 'bg-red-50',
+                    'w-full px-4 py-3 text-left transition hover:bg-brand-accent-soft',
+                    selectedBranchId === branch.id && 'bg-brand-accent-soft',
                   )}
                 >
                   <p className="text-sm font-bold text-brand-primary">
@@ -121,6 +134,19 @@ export function BranchDropdown({ tenantName = 'Store' }: BranchDropdownProps) {
           </ul>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={pendingBranchId !== undefined}
+        title="Switch branch?"
+        message="Switching branch will load a different cart. Your current branch cart is saved separately. Continue?"
+        confirmLabel="Switch"
+        onCancel={() => setPendingBranchId(undefined)}
+        onConfirm={() => {
+          const next = pendingBranchId ?? null;
+          setPendingBranchId(undefined);
+          applyBranch(next);
+        }}
+      />
     </div>
   );
 }
